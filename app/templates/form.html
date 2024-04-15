@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="kor">
+    <head>
+        <meta charset="UTF-8">
+        <title>투자성향 테스트</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <header>
+            <h1><strong>투자성향 테스트</strong></h1>
+        </header>
+        
+        <main>
+            <form method="POST" action="/quiz/submit">
+                <fieldset class = "select">
+                    <legend><strong>입력사항</strong></legend>
+                    <h5>2. 투자하고자 하는 자금의 투자 가능 기간은 얼마나 됩니까?</h5>
+                    <input type="radio" id="period1" name="period" value = "less_six_months">6개월 이내
+                    <input type="radio" id="period2" name="period" value = "less_one_year">6개월 이상 ~ 1년 이내
+                    <input type="radio" id="period3" name="period" vlaue = "less_two_year">1년 이상 ~ 2년 이내
+                    <input type="radio" id="period4" name="period" value ="less_three_year">2년 이상 ~ 3년 이내
+                    <input type="radio" id="period5" name="period" value = "more_than_three">3년 이상
+
+                    <h5>3. 다음 중 투자 경험과 가장 가까운 것은 어느 것입니까?(중복선택가능)</h5>
+                    <label>
+                        <input type="checkbox" id="option1" name="experience" value = 'opt1'> 은행의 예·적금, 국채, 지방채, 보증채, MMF, CMA 등              
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" id="option2" name="experience" value = 'opt2'> 금융채, 신용도가 높은 회사채, 채권형펀드, 원금보존추구형ELS 등                
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" id="option3" name="experience" value = 'opt3'> 신용도 중간 등급의 회사채, 원금의 일부만 보장되는 ELS, 혼합형펀드 등                
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" id="option4" name="experience" value = 'opt4'> 신용도가 낮은 회사채, 주식, 원금이 보장되지 않는 ELS, 시장수익률 수준의 수익을 추구하는 주식형펀드 등              
+                    </label>
+                    <br>
+                    <label>
+                        <input type="checkbox" id="option5" name="experience" value = 'opt5'> ELW, 선물옵션, 시장수익률 이상의 수익을 추구하는 주식형펀드, 파생상품에 투자하는 펀드, 주식 신용거래 등              
+                    </label>
+                    <h5>4. 금융상품 투자에 대한 본인의 지식수준은 어느 정도라고 생각하십니까?</h5>
+                    <input type="radio" id="level1" name="level" value="very_low">[매우 낮은 수준] 투자의사 결정을 스스로 내려본 경험이 없는 정도
+                    <br>
+                    <input type="radio" id="level2" name="level" value="low">[낮은 수준] 주식과 채권의 차이를 구별할 수 있는 정도
+                    <br>
+                    <input type="radio" id="level3" name="level" value="intermediate">[높은 수준] 투자할 수 있는 대부분의 금융상품의 차이를 구별할수 있는 정도
+                    <br>
+                    <input type="radio" id="level4" name="level" value="high">[매우 높은 수준] 금융상품을 비롯하여 모든 투자대상 상품의 차이를 이해할 수 있는 정도
+
+
+                    <h5>5 . 현재 투자하고자 하는 자금은 전체 금융자산(부동산 등을 제외) 중 어느 정도의 비중을 차지합니까?</h5>
+                    <input type="radio" id = 'ratio1' value="less_10_percent" name="investment_ratio">10% 이내
+                    <br>
+                    <input type="radio" id = 'ratio2' value="less_20_percent" name="investment_ratio">10% 이상~20% 이내
+                    <br>
+                    <input type="radio" id = 'ratio3' value="less_30_percent" name="investment_ratio">20% 이상~30% 이내
+                    <br>
+                    <input type="radio" id = 'ratio4' value="less_40_percent" name="investment_ratio">30% 이상~40% 이내
+                    <br>
+                    <input type="radio" id = 'ratio5' value="more_40_percent" name="investment_ratio">40%이상
+
+
+                    <h5>6 . 다음 중 당신의 수입원을 가장 잘 나타내고 있는 것은 어느 것입니까?</h5>
+                    <input type="radio" id = 'income1' value="increase" name="income">현재 일정한 수입이 발생하고 있으며, 향후 현재 수준을 유지하거나 증가할 것으로 예상된다.
+                    <br>
+                    <input type="radio" id = 'income2' value="decrease" name="income">현재 일정한 수입이 발생하고 있으나, 향후 감소하거나 불안정할 것으로 예상된다.
+                    <br>
+                    <input type="radio" id = 'income3' value="retirement_fund" name="income">현재 일정한 수입이 없으며, 연금이 주수입원이다.
+
+
+
+                    <h5>7 . 만약 투자원금에 손실이 발생할 경우 다음 중 감수할 수 있는 손실 수준은 어느 것입니까?</h5>
+                    <input type="radio" id = 'loss1' value="no_loss" name="loss_allowed">무슨 일이 있어도 투자원금은 보전되어야 한다.
+                    <br>
+                    <input type="radio" id = 'loss2' value="less_10" name="loss_allowed">10% 미만까지는 손실을 감수할 수 있을 것 같다.
+                    <br>
+                    <input type="radio" id = 'loss3' value="less_20" name="loss_allowed">20% 미만까지는 손실을 감수할 수 있을 것 같다.
+                    <br>
+                    <input type="radio" id = 'loss4' value="high_risk" name="loss_allowed">기대수익이 높다면 위험이 높아도 상관하지 않겠다.
+                    <br>
+                    <button type = "submit" id = "submit_btn">제출하기</button>
+                </fieldset>
+            </form>
+        </main>
+        
+        <footer>
+
+        </footer>
+        <!--
+        <script src="form.js"></script>
+        -->
+
+    </body>
+</html>

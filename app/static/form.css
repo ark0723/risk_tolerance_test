@@ -1,0 +1,22 @@
+*{
+    text-align: center;
+}
+
+html{
+    background-color:rgb(192, 233, 239);
+    font-family: 'Nanum Pen Script', cursive;
+    font-size: 16px;
+}
+
+body{
+    width: 400px;
+    margin: auto; 
+}
+
+input{
+    position: 5px;
+}
+
+p{
+    font-size: 1.5rem;
+}

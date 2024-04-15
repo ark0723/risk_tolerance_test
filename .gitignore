@@ -1,0 +1,6 @@
+# environment
+.venv/
+alembic.init
+migrations/
+
+
