@@ -27,6 +27,8 @@
     - ETF dashboard
         - interactive dashboard : /quiz/dashboard
 
+# 영상 첨부
+![화면 기록 2024-04-16 오전 1 05 17](https://github.com/ark0723/risk_tolerance_test/assets/34089914/1fca1e14-786f-4b0c-904e-37991751dbc0)
     
 
 
