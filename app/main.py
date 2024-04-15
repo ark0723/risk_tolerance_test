@@ -23,6 +23,12 @@ app.mount(
     "/static", StaticFiles(directory=str(Path(BASE_DIR, "static"))), name="static"
 )
 
+# dash app
+from show_etf import app as dashboard
+from fastapi.middleware.wsgi import WSGIMiddleware
+
+app.mount("/quiz/dashboard", WSGIMiddleware(dashboard.server))
+
 # load routers
 app.include_router(admin_router, tags=["admin"])
 app.include_router(question_router, tags=["question"])

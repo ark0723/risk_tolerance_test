@@ -7,6 +7,7 @@ from database import get_db
 import schemas, crud
 from pathlib import Path
 
+
 # HTML, CSS, JS 사용을 위한 라이브러리
 from fastapi.staticfiles import StaticFiles
 from starlette.templating import Jinja2Templates
