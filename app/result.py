@@ -6,22 +6,8 @@ from models import Quiz, Participant
 import pandas as pd
 
 import plotly.graph_objs as go
-from plotly.subplots import make_subplots
-from dash import Dash, html, dcc, Input, Output, State, callback
-
-
-# 데이터베이스 연결 설정
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
-conn = engine.connect()
-
-# create session object to initiate query in database
-Session = sessionmaker(bind=engine)
-session = Session()
-
-# load all data from quiz table
-sql = "SELECT * FROM quiz"
-df = pd.read_sql(sql, conn, index_col="id")
-df["point"] = None
+import plotly.io as pio
+from dash import Dash, html, dcc, Input, Output, State
 
 
 def calculate_q1(x):
@@ -121,37 +107,39 @@ def calculate_q7(x):
         return 0
 
 
-# data preprocessing
-df.loc[df["question_id"] == 1, "point"] = df[df["question_id"] == 1][
-    "chosen_answer"
-].apply(calculate_q1)
-df.loc[df["question_id"] == 2, "point"] = df[df["question_id"] == 2][
-    "chosen_answer"
-].apply(calculate_q2)
-df.loc[df["question_id"] == 3, "point"] = df[df["question_id"] == 3][
-    "chosen_answer"
-].apply(calculate_q3)
-df.loc[df["question_id"] == 4, "point"] = df[df["question_id"] == 4][
-    "chosen_answer"
-].apply(calculate_q4)
-df.loc[df["question_id"] == 5, "point"] = df[df["question_id"] == 5][
-    "chosen_answer"
-].apply(calculate_q5)
-df.loc[df["question_id"] == 6, "point"] = df[df["question_id"] == 6][
-    "chosen_answer"
-].apply(calculate_q6)
-df.loc[df["question_id"] == 7, "point"] = df[df["question_id"] == 7][
-    "chosen_answer"
-].apply(calculate_q7)
+def preprocess(df):
+    # point 컬럼 추가
+    df["point"] = None
+    df.loc[df["question_id"] == 1, "point"] = df[df["question_id"] == 1][
+        "chosen_answer"
+    ].apply(calculate_q1)
+    df.loc[df["question_id"] == 2, "point"] = df[df["question_id"] == 2][
+        "chosen_answer"
+    ].apply(calculate_q2)
+    df.loc[df["question_id"] == 3, "point"] = df[df["question_id"] == 3][
+        "chosen_answer"
+    ].apply(calculate_q3)
+    df.loc[df["question_id"] == 4, "point"] = df[df["question_id"] == 4][
+        "chosen_answer"
+    ].apply(calculate_q4)
+    df.loc[df["question_id"] == 5, "point"] = df[df["question_id"] == 5][
+        "chosen_answer"
+    ].apply(calculate_q5)
+    df.loc[df["question_id"] == 6, "point"] = df[df["question_id"] == 6][
+        "chosen_answer"
+    ].apply(calculate_q6)
+    df.loc[df["question_id"] == 7, "point"] = df[df["question_id"] == 7][
+        "chosen_answer"
+    ].apply(calculate_q7)
 
-print(df.head(20))
+    return df
 
 
 # 1. participant 총 점수 구하기
 def calculate_total_points(df, participant_id: int):
     # get dataframe by participant_id
     total_points = df[df["participant_id"] == participant_id]["point"].sum()
-    print(total_points)
+    # print(total_points)
 
     if total_points <= 20:
         return "안정형"
@@ -165,6 +153,7 @@ def calculate_total_points(df, participant_id: int):
         return "공격투자형"
 
 
+# graph1
 def draw_inv_type_ratio(df):
     # participant id list
     p_id_list = df["participant_id"].unique()
@@ -182,26 +171,110 @@ def draw_inv_type_ratio(df):
     trace = go.Pie(labels=pie_df.index, values=pie_df["Type"])
     layout = go.Layout(title="투자성향 분포도")
     fig = go.Figure(data=trace, layout=layout)
-    fig.write_html("app/templates/inv_type.html")
+    # fig.write_html("app/templates/inv_type.html")
+    chart_html = pio.to_html(fig, full_html=False)
+    print(type(chart_html))
+    return chart_html
 
 
-draw_inv_type_ratio(df)
+# graph2
+def draw_question_dist(df, question_id: int):
+
+    df = df[df["question_id"] == question_id]
+    answer_data = df["chosen_answer"].value_counts().to_frame()
+    # print(answer_data)
+    # print(answer_data.index, answer_data.values)
+    # print(answer_data.values.shape)
+
+    label_dict = {
+        1: ["19세 이하", "20세~40세", "41세~50세", "51세~60세", "61세 이상"],
+        2: [
+            "less_six_months",
+            "less_one_year",
+            "less_two_year",
+            "less_three_year",
+            "more_than_three",
+        ],
+        3: ["opt1", "opt2", "opt3", "opt4", "opt5"],
+        4: ["very_low", "low", "intermediate", "high"],
+        5: [
+            "less_10_percent",
+            "less_20_percent",
+            "less_30_percent",
+            "less_40_percent",
+            "more_40_percent",
+        ],
+        6: ["increase", "decrease", "retirement_fund"],
+        7: ["no_loss", "less_10", "less_20", "high_risk"],
+    }
+    # calculate ratio
+    labels = (
+        answer_data.index
+    )  # Index(['61세 이상', '41세~50세', '19세 이하', '20세~40세', '51세~60세']
+    # ratio_count = [i[0] for i in answer_data.values]  # [[80][39][32][30][22]]
+    ratio_count = answer_data.values.flatten()
+
+    # data for piechart
+    pie_df = pd.DataFrame(ratio_count)
+    pie_df.index = labels
+    col_name = f"Q{question_id}"
+    pie_df.columns = [col_name]
+
+    trace = go.Pie(labels=pie_df.index, values=pie_df[col_name])
+    layout = go.Layout(title=col_name)
+    fig = go.Figure(data=trace, layout=layout)
+    # fig.write_html("app/templates/inv_type.html")
+    chart_html = pio.to_html(fig, full_html=False)
+    print(type(chart_html))
+    return chart_html
 
 
-def draw_participant_attributes():
-    # get dataframe by participant_id
-    df = pd.read_sql_query(
-        sql=session.query(Participant.age, Participant.gender).statement,
-        con=engine,
-    )
+# 데이터베이스 연결 설정
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
+conn = engine.connect()
+
+# create session object to initiate query in database
+Session = sessionmaker(bind=engine)
+session = Session()
+
+# load all data from quiz table
+sql = "SELECT * FROM quiz"
+df = pd.read_sql(sql, conn, index_col="id")
+
+# apply preprocessing
+df = preprocess(df)
+
+
+chart_html = []
+
+# 투자성향 분포도 그리기
+pie_chart = draw_inv_type_ratio(df)
+print(type(pie_chart))
+chart_html.append(pie_chart)
+
+for i in range(1, 8):
+    q_pie_chart = draw_question_dist(df, i)
+    chart_html.append(q_pie_chart)
+# def draw_participant_attributes():
+#     # get dataframe by participant_id
+#     df = pd.read_sql_query(
+#         sql=session.query(Participant.age, Participant.gender).statement,
+#         con=engine,
+#     )
 
 
 # 1. participant 총 점수 구하기
-def get_total_points(participant_id: int):
-    # get dataframe by participant_id
-    df = pd.read_sql_query(
-        sql=session.query(Quiz.question_id, Quiz.chosen_answer)
-        .filter(Quiz.participant_id == participant_id)
-        .statement,
-        con=engine,
-    )
+# def get_total_points(participant_id: int):
+#     # get dataframe by participant_id
+#     df = pd.read_sql_query(
+#         sql=session.query(Quiz.question_id, Quiz.chosen_answer)
+#         .filter(Quiz.participant_id == participant_id)
+#         .order_by(Quiz.question_id.asc())
+#         .statement,
+#         con=engine,
+#     )
+
+#     df = preprocess(df)
+#     inv_type = calculate_total_points(df, participant_id)
+
+#     return inv_type

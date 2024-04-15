@@ -3,4 +3,4 @@
 alembic.init
 migrations/
 
-
+.env

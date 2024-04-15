@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 import schemas, crud
 from pathlib import Path
+from models import Quiz
 
 
 # HTML, CSS, JS 사용을 위한 라이브러리
@@ -79,15 +80,13 @@ def send_answer_to_server(
     participant = crud.get_new_participant(db)
     crud.save_answers(db, participant, form_data)
 
-    # todo: 쿠키에 저장된 participant_id, participant_name 제거
-    # https://www.geeksforgeeks.org/fastapi-cookie-parameters/
-
     return templates.TemplateResponse(name="thanks.html", context={"request": request})
 
 
 # todo: visualization 완성
 @quiz_router.get("/graph", response_class=HTMLResponse)
 def show_graphs(request: Request):
-    return templates.TemplateResponse(
-        name="inv_type.html", context={"request": request}
-    )
+    from result import chart_html
+
+    # return templates.TemplateResponse(name="inv_type.html", context={"request": request})
+    return HTMLResponse(content="".join(chart_html))

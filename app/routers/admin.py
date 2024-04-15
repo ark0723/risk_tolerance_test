@@ -1,7 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, Header, Response
 from fastapi.responses import HTMLResponse
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import jwt
 from starlette import status
+from datetime import datetime, timedelta
+from typing import Optional
 
 # password hashing context
 from crud import pwd_context
@@ -11,9 +14,31 @@ from database import get_db
 import schemas
 import crud
 
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+ACCESS_TOKEN_EXPIRE_MINUTES = float(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
+
+# create a set to stroe revoked tokens
+revoked_token_set = set()
 
 # admin user 관리를 위한 라우터
 admin_router = APIRouter(prefix="/admin")
+
+
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now() + expires_delta
+    else:
+        expire = datetime.now() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 
 @admin_router.post("/", status_code=status.HTTP_204_NO_CONTENT)
@@ -34,22 +59,42 @@ def create_admin(_admin: schemas.AdminCreate, db: Session = Depends(get_db)):
 
 @admin_router.post("/login")
 def login(
-    login_form: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+    response: Response,
+    login_form: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
 ):
     # admin user 존재 확인
     user = crud.get_admin_user(db, login_form.username)
 
-    if not user:
+    # check user and password
+    if not user or not pwd_context.verify(login_form.password, user.password):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user or password"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
-    # 로그인
-    res = crud.verify_password(login_form.password, user.password)
+    # make access token
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user.username}, expires_delta=access_token_expires
+    )
 
-    if not res:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user or password"
-        )
+    # 쿠키에 저장
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        expires=access_token_expires,
+        httponly=True,
+    )
 
-    return HTTPException(status_code=status.HTTP_200_OK, detail="login success!")
+    return schemas.Token(access_token=access_token, token_type="bearer")
+
+
+@admin_router.post("/logout")
+def logout(response: Response, request: Request):
+    access_token = request.cookies.get("access_token")
+
+    # 쿠키 삭제
+    response.delete_cookie(key="access_token")
+    return HTTPException(status_code=status.HTTP_200_OK, detail="Logout successful")

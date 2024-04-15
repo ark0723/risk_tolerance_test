@@ -34,6 +34,11 @@ class AdminCreate(BaseModel):
         return v
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
 # participants
 class ParticipantCreate(BaseModel):
     name: str
